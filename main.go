@@ -12,9 +12,25 @@ import (
 )
 
 func main() {
-	// File must be JPEG/JPG -> if PNG, change to LoadPNG
-	file := "parrot.jpeg"
-	refImg, _ := gg.LoadJPG(file)
+	// File must be JPEG/JPG or PNG
+	fileName := "parrot.jpeg"
+	fileSlice := strings.Split(fileName, ".")
+	// Looks at the file extension and only runs if it is valid
+	switch fileSlice[len(fileSlice)-1] {
+	case "jpeg", "jpg":
+		refImg, _ := gg.LoadJPG(fileName)
+		runFile(refImg, fileSlice)
+	case "png":
+		refImg, _ := gg.LoadPNG(fileName)
+		runFile(refImg, fileSlice)
+	default:
+		fmt.Println("ERROR - File type must be JPEG/JPG or PNG")
+	}
+}
+
+// This is the function that does all the work
+// it is only called by a valid file extension
+func runFile(refImg image.Image, file []string) {
 	fmt.Println("Image Loaded")
 	context := gg.NewContextForImage(refImg)
 	bounds := refImg.Bounds()
@@ -50,9 +66,8 @@ func main() {
 		}
 	}
 	fmt.Println("Drawing Ended")
-	newFile := strings.Split(file, ".")
 	// Saves the file under the original name + filtered as a PNG
-	context.SavePNG(newFile[0] + "_filtered.png")
+	context.SavePNG(file[len(file)-2] + "_filtered.png")
 	fmt.Println("File Saved")
 }
 
