@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"image"
+	"log"
 	"math"
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 
@@ -13,18 +15,28 @@ import (
 
 func main() {
 	// File must be JPEG/JPG or PNG
-	fileName := "parrot.jpeg"
+	args := os.Args
+	if len(args) == 1 {
+		log.Fatal("File must be attached as argument")
+	}
+	fileName := args[1]
 	fileSlice := strings.Split(fileName, ".")
 	// Looks at the file extension and only runs if it is valid
 	switch fileSlice[len(fileSlice)-1] {
 	case "jpeg", "jpg":
-		refImg, _ := gg.LoadJPG(fileName)
+		refImg, err := gg.LoadJPG(fileName)
+		if err != nil {
+			log.Fatal("Could not load attached image")
+		}
 		runFile(refImg, fileSlice)
 	case "png":
-		refImg, _ := gg.LoadPNG(fileName)
+		refImg, err := gg.LoadPNG(fileName)
+		if err != nil {
+			log.Fatal("Could not load attached image")
+		}
 		runFile(refImg, fileSlice)
 	default:
-		fmt.Println("ERROR - File type must be JPEG/JPG or PNG")
+		log.Fatal("File type must be JPEG/JPG or PNG")
 	}
 }
 
