@@ -1,12 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"image"
 	"log"
 	"math"
 	"math/rand"
-	"os"
 	"strings"
 	"time"
 
@@ -15,12 +15,18 @@ import (
 
 func main() {
 	// File must be JPEG/JPG or PNG
-	args := os.Args
-	if len(args) == 1 {
+	filePtr := flag.String("file", "no_image", "the image being processed, must be JPEG/JPG or PNG")
+	dirPtr := flag.String("dir", "horizontal", "direction of processing; must be vertical or horizontal(default)")
+
+	flag.Parse()
+
+	if *filePtr == "no_image" {
 		log.Fatal("File must be attached as argument")
 	}
-	fileName := args[1]
+	fileName := *filePtr
 	fileSlice := strings.Split(fileName, ".")
+	var direction string = *dirPtr
+
 	// Looks at the file extension and only runs if it is valid
 	switch fileSlice[len(fileSlice)-1] {
 	case "jpeg", "jpg":
@@ -28,13 +34,13 @@ func main() {
 		if err != nil {
 			log.Fatal("Could not load attached image")
 		}
-		runFile(refImg, fileSlice)
+		runFile(refImg, fileSlice, direction)
 	case "png":
 		refImg, err := gg.LoadPNG(fileName)
 		if err != nil {
 			log.Fatal("Could not load attached image")
 		}
-		runFile(refImg, fileSlice)
+		runFile(refImg, fileSlice, direction)
 	default:
 		log.Fatal("File type must be JPEG/JPG or PNG")
 	}
@@ -42,8 +48,9 @@ func main() {
 
 // This is the function that does all the work
 // it is only called by a valid file extension
-func runFile(refImg image.Image, file []string) {
+func runFile(refImg image.Image, file []string, direction string) {
 	fmt.Println("Image Loaded")
+	startTime := time.Now()
 	context := gg.NewContextForImage(refImg)
 	bounds := refImg.Bounds()
 	width, height := bounds.Max.X, bounds.Max.Y
@@ -57,29 +64,56 @@ func runFile(refImg image.Image, file []string) {
 	fmt.Println("Drawing Started")
 	rand.Seed(time.Now().UnixNano())
 	w, h := 1, 1
-	for y := 0; y < height; y += h {
-		h = rand.Intn(hScale) + hScale
+
+	switch direction {
+	case "vertical":
 		for x := 0; x < width; x += w {
 			w = rand.Intn(wScale) + wScale
-			context.Push()
-			if x+w > width {
-				w = width - x
-			}
-			if y+h > height {
-				h = height - y
-			}
-			context.DrawRectangle(float64(x), float64(y), float64(w), float64(h))
-			r, g, b := getAverageColor(x, y, x+w, y+h, refImg)
+			for y := 0; y < height; y += h {
+				h = rand.Intn(hScale) + hScale
+				context.Push()
+				if x+w > width {
+					w = width - x
+				}
+				if y+h > height {
+					h = height - y
+				}
+				context.DrawRectangle(float64(x), float64(y), float64(w), float64(h))
+				r, g, b := getAverageColor(x, y, x+w, y+h, refImg)
 
-			// Rectangle is slightly translucent to be able to see some finer detail
-			context.SetRGBA255(r, g, b, 235)
-			context.Fill()
-			context.Pop()
+				// Rectangle is slightly translucent to be able to see some finer detail
+				context.SetRGBA255(r, g, b, 235)
+				context.Fill()
+				context.Pop()
+			}
+		}
+	case "horizontal":
+		for y := 0; y < height; y += h {
+			h = rand.Intn(hScale) + hScale
+			for x := 0; x < width; x += w {
+				w = rand.Intn(wScale) + wScale
+				context.Push()
+				if x+w > width {
+					w = width - x
+				}
+				if y+h > height {
+					h = height - y
+				}
+				context.DrawRectangle(float64(x), float64(y), float64(w), float64(h))
+				r, g, b := getAverageColor(x, y, x+w, y+h, refImg)
+
+				// Rectangle is slightly translucent to be able to see some finer detail
+				context.SetRGBA255(r, g, b, 235)
+				context.Fill()
+				context.Pop()
+			}
 		}
 	}
 	fmt.Println("Drawing Ended")
+	endTime := time.Now()
+	fmt.Printf("Time Elapsed: %v\n", endTime.Sub(startTime))
 	// Saves the file under the original name + filtered as a PNG
-	context.SavePNG(file[len(file)-2] + "_filtered.png")
+	context.SavePNG(file[len(file)-2] + "_filtered_" + direction + ".png")
 	fmt.Println("File Saved")
 }
 
