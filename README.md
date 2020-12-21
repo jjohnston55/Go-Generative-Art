@@ -25,9 +25,11 @@ The program follows the following basic steps:
 ![parrot](parrot.jpeg)
 
 ### After
-![tree_filtered](img_filtered.png)
-![mountain_filtered](img1_filtered.png)
-![parrot_filtered](parrot_filtered.png)
+Horizontally | Vertically
+:-:|:-:
+![tree_filtered_horizontal](img_filtered_horizontal.png) | ![tree_filtered_vertical](img_filtered_vertical.png)
+![mountain_filtered_horizontal](img1_filtered_horizontal.png) | ![mountain_filtered_vertical](img1_filtered_vertical.png)
+![parrot_filtered_horizontal](parrot_filtered_horizontal.png) | ![parrot_filtered_vertical](parrot_filtered_vertical.png)
 
 ## Roadmap
 I am currently looking to improve upon the algorithm so that the image may look less pixelated and more abstract. 
